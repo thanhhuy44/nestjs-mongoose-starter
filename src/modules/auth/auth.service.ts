@@ -9,7 +9,7 @@ import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { Model } from 'mongoose';
 
-import { User } from '@/users/entities/user.entity';
+import { User } from '@/modules/users/entities/user.entity';
 
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';

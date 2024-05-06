@@ -2,7 +2,7 @@ import { Controller, Get, HttpStatus, Query, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
-import { PaginationDto } from '@/pagination.dto';
+import { PaginationDto } from '~/app/dto/pagination.dto';
 
 import { UsersService } from './users.service';
 

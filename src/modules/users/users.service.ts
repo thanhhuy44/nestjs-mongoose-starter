@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { PaginationDto } from '@/pagination.dto';
+import { PaginationDto } from '~/app/dto/pagination.dto';
 
 import { User } from './entities/user.entity';
 
