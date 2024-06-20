@@ -12,7 +12,7 @@ import { AppService } from './app.service';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    MongooseModule.forRoot('mongodb://localhost/nest-app'),
+    MongooseModule.forRoot(process.env.DATABASE_URL),
     UsersModule,
     AuthModule,
   ],
