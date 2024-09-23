@@ -19,7 +19,7 @@ declare global {
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
   async use(req: Request, res: Response, next: () => void) {
-    const token = req.headers.authorization.split(' ')[1];
+    const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
       throw new UnauthorizedException();
     }

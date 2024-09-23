@@ -11,7 +11,9 @@ import { AppService } from './app.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      envFilePath: ['.env.local', '.env'],
+    }),
     MongooseModule.forRoot(process.env.DATABASE_URL),
     UsersModule,
     AuthModule,

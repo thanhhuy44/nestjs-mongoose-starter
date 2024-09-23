@@ -4,7 +4,8 @@ export type ApiResponse = {
   data: any;
   pagination?: {
     page: number;
+    limit: number;
+    total: number;
     totalPages: number;
-    pageSize: number;
   };
 };
