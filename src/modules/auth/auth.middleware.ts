@@ -1,5 +1,4 @@
 import {
-  ForbiddenException,
   Injectable,
   NestMiddleware,
   UnauthorizedException,
@@ -11,7 +10,10 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      user: string;
+      user: {
+        id: string;
+        role: string;
+      };
     }
   }
 }
@@ -25,11 +27,11 @@ export class AuthMiddleware implements NestMiddleware {
     }
     try {
       const verifiedToken = jwt.verify(token, process.env.JWT_SECRET_KEY);
-      req.user = (verifiedToken as jwt.JwtPayload).id;
+      req.user = verifiedToken as jwt.JwtPayload as any;
       next();
     } catch (error) {
       console.error(error);
-      throw new ForbiddenException(error.message);
+      throw new UnauthorizedException(error.message);
     }
   }
 }

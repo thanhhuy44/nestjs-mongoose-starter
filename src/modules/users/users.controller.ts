@@ -1,8 +1,7 @@
-import { Controller, Get, HttpStatus, Query, Res } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
 
-import { PaginationDto } from '~/app/dto/pagination.dto';
+import { PaginationDto } from '@/common/dto/pagination.dto';
 
 import { UsersService } from './users.service';
 
@@ -27,12 +26,8 @@ export class UsersController {
     description: 'Numbers of user per page',
     example: 10,
   })
-  async findAll(@Query() pagination: PaginationDto, @Res() res: Response) {
+  async findAll(@Query() pagination: PaginationDto) {
     const data = await this.usersService.findAll(pagination);
-    return res.status(HttpStatus.OK).json({
-      statusCode: HttpStatus.OK,
-      message: 'OK!',
-      ...data,
-    });
+    return data;
   }
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { PaginationDto } from '~/app/dto/pagination.dto';
+import { PaginationDto } from '@/common/dto/pagination.dto';
 
 import { User } from './entities/user.entity';
 
@@ -13,18 +13,27 @@ export class UsersService {
   ) {}
 
   async findAll(pagination: PaginationDto) {
-    const { page, limit } = pagination;
-    const users = await this.UserModel.find({})
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortDirection = 'desc',
+    } = pagination;
+    const data = await this.UserModel.find({ isDeleted: false })
+      .sort([[sortBy, sortDirection]])
       .skip((page - 1) * limit)
       .limit(limit)
       .exec();
-    const total = await this.UserModel.countDocuments();
+    const total = await this.UserModel.countDocuments({ isDeleted: false });
+    const totalPages = Math.ceil(total / limit);
+
     return {
-      data: users,
+      data,
       pagination: {
         page,
         limit,
-        totalPages: Math.ceil(total / limit),
+        total,
+        totalPages,
       },
     };
   }

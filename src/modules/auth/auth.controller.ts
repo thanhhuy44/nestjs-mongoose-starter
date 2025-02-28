@@ -31,32 +31,23 @@ export class AuthController {
   }
 
   @Post('/login')
-  async login(@Body() body: LoginDto, @Res() res: Response) {
+  async login(@Body() body: LoginDto) {
     const data = await this.authService.login(body);
-    return res.status(HttpStatus.OK).json({
-      statusCode: HttpStatus.OK,
-      message: 'OK!',
-      data,
-    });
+    return { data };
   }
 
   @Get('/token')
-  async token(@Req() req: Request, @Res() res: Response) {
-    const data = await this.authService.token(req.userRefresh);
-    return res.status(HttpStatus.OK).json({
-      statusCode: HttpStatus.OK,
-      message: 'OK!',
-      data,
-    });
+  async token(@Req() req: Request) {
+    const data = await this.authService.token(req.user.id, req.user.role);
+    return { data };
   }
 
   @Get('/refresh-token')
-  async refreshToken(@Req() req: Request, @Res() res: Response) {
-    const data = await this.authService.refreshToken(req.userRefresh);
-    return res.status(HttpStatus.OK).json({
-      statusCode: HttpStatus.OK,
-      message: 'OK!',
-      data,
-    });
+  async refreshToken(@Req() req: Request) {
+    const data = await this.authService.refreshToken(
+      req.user.id,
+      req.user.role,
+    );
+    return { data };
   }
 }

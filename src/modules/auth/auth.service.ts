@@ -30,9 +30,10 @@ export class AuthService {
   }
 
   async login(body: LoginDto) {
-    const user = await this.UserModel.findOne({ email: body.email }).select(
-      '+password',
-    );
+    const user = await this.UserModel.findOne({
+      email: body.email,
+      isDeleted: false,
+    }).select('+password');
     if (!user) {
       throw new NotFoundException('User not found!');
     }
@@ -40,8 +41,11 @@ export class AuthService {
     if (!isMatchPassword) {
       throw new BadRequestException('Password not match!');
     }
-    const { token } = await this.token(user._id.toString());
-    const { refreshToken } = await this.refreshToken(user._id.toString());
+    const { token } = await this.token(user._id.toString(), user.role);
+    const { refreshToken } = await this.refreshToken(
+      user._id.toString(),
+      user.role,
+    );
 
     return {
       info: user,
@@ -50,9 +54,9 @@ export class AuthService {
     };
   }
 
-  async token(id: string) {
+  async token(id: string, role: string) {
     try {
-      const token = jwt.sign({ id }, process.env.JWT_SECRET_KEY, {
+      const token = jwt.sign({ id, role }, process.env.JWT_SECRET_KEY, {
         expiresIn: 60 * 60,
       });
       return { token };
@@ -62,13 +66,13 @@ export class AuthService {
     }
   }
 
-  async refreshToken(id: string) {
+  async refreshToken(id: string, role: string) {
     try {
       const refreshToken = jwt.sign(
-        { id },
+        { id, role },
         process.env.JWT_REFRESH_SECRET_KEY,
         {
-          expiresIn: '2 days',
+          expiresIn: '30 days',
         },
       );
       return { refreshToken };
