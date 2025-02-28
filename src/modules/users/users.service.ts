@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Cache } from 'cache-manager';
 import { Model } from 'mongoose';
 
 import { PaginationDto } from '@/common/dto/pagination.dto';
@@ -9,6 +11,7 @@ import { User } from './entities/user.entity';
 @Injectable()
 export class UsersService {
   constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @InjectModel(User.name) private readonly UserModel: Model<User>,
   ) {}
 

@@ -12,7 +12,9 @@ import modules from '@/modules';
       envFilePath: ['.env.local', '.env'],
     }),
     MongooseModule.forRoot(process.env.DATABASE_URL),
-    CacheModule.register(),
+    CacheModule.registerAsync({
+      isGlobal: true,
+    }),
     ...modules,
   ],
   providers: [

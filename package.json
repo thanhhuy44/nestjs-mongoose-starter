@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@keyv/redis": "^4.2.0",
     "@nestjs/cache-manager": "^3.0.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.2",
@@ -30,6 +31,7 @@
     "aws-sdk": "^2.1692.0",
     "bcrypt": "^5.1.1",
     "cache-manager": "^6.4.0",
+    "cacheable": "^1.8.8",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "jsonwebtoken": "^9.0.2",
