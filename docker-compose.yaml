@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo_dev
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=Thanhhuy_44
+    volumes:
+      - mongo-data:/data/db
+  app:
+    build:
+      dockerfile: Dockerfile
+    container_name: my-app
+    restart: always
+    ports:
+      - "3030:3030"
+    depends_on:
+      - mongo
+    env_file:
+      - .env.local
+
+volumes:
+  mongo-data:

@@ -2,7 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-import { AppModule } from '@/app/app.module';
+import { AppModule } from '@/app.module';
 
 import { TransformInterceptor } from './common/response.interceptor';
 
@@ -12,6 +12,8 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
       transformOptions: { enableImplicitConversion: true },
     }),
   );
@@ -31,7 +33,7 @@ async function bootstrap() {
       },
       'JWT-Auth',
     )
-    .setTitle('NestJS base source')
+    .setTitle('NestJS Mongoose Starter')
     .setDescription('API description')
     .setVersion('1.0')
     .setBasePath('api')

@@ -1,5 +1,5 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cache } from 'cache-manager';
 import { Model } from 'mongoose';
@@ -39,5 +39,13 @@ export class UsersService {
         totalPages,
       },
     };
+  }
+
+  async getMe(id: string) {
+    const user = await this.UserModel.findById(id);
+    if (!user) {
+      throw new NotFoundException('User not found!');
+    }
+    return user;
   }
 }

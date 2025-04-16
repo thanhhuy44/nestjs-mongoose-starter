@@ -1,8 +1,12 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Document } from 'mongoose';
 
 import { PaginationDto } from '@/common/dto/pagination.dto';
 
+import { GetUser } from '../auth/decorator';
+import { AuthGuard } from '../auth/guard';
+import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 
 @ApiTags('User')
@@ -10,24 +14,16 @@ import { UsersService } from './users.service';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-
   @Get()
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    type: Number,
-    description: 'Page number',
-    example: 1,
-  })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    type: Number,
-    description: 'Numbers of user per page',
-    example: 10,
-  })
   async findAll(@Query() pagination: PaginationDto) {
     const data = await this.usersService.findAll(pagination);
     return data;
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('me')
+  async getMe(@GetUser() user: Document<User>) {
+    const data = await this.usersService.getMe(user._id.toString());
+    return { data };
   }
 }

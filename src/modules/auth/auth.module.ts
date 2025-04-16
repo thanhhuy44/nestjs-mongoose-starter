@@ -1,9 +1,4 @@
-import {
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 
@@ -11,7 +6,6 @@ import { User, UserSchema } from '@/modules/users/entities/user.entity';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { RefreshTokenMiddleware } from './refreshToken.middleware';
 
 @Module({
   imports: [
@@ -38,17 +32,4 @@ import { RefreshTokenMiddleware } from './refreshToken.middleware';
   controllers: [AuthController],
   providers: [AuthService],
 })
-export class AuthModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RefreshTokenMiddleware).forRoutes(
-      {
-        path: '/auth/token',
-        method: RequestMethod.GET,
-      },
-      {
-        path: '/auth/refresh-token',
-        method: RequestMethod.GET,
-      },
-    );
-  }
-}
+export class AuthModule {}

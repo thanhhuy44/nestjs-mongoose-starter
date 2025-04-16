@@ -1,6 +1,7 @@
+import * as AWS from '@aws-sdk/client-s3';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
-import * as AWS from 'aws-sdk';
 import { Model } from 'mongoose';
 
 import { Asset } from './entities/asset.entity';
@@ -9,13 +10,16 @@ import { Asset } from './entities/asset.entity';
 export class AssetsService {
   constructor(
     @InjectModel(Asset.name) private readonly AssetModel: Model<Asset>,
+    private readonly configService: ConfigService,
   ) {}
-
-  private readonly bucketName = process.env.S3_BUCKET_NAME;
+  private readonly bucketName = this.configService.get('S3_BUCKET_NAME');
   private getS3() {
     return new AWS.S3({
-      accessKeyId: process.env.S3_BUCKET_ACCESS_KEY,
-      secretAccessKey: process.env.S3_BUCKET_SECRET_ACCESS_KEY,
+      region: this.configService.get('S3_BUCKET_REGION'),
+      credentials: {
+        accessKeyId: this.configService.get('S3_BUCKET_ACCESS_KEY'),
+        secretAccessKey: this.configService.get('S3_BUCKET_SECRET_ACCESS_KEY'),
+      },
     });
   }
 
@@ -24,15 +28,15 @@ export class AssetsService {
     const extension = name.split('.').pop();
     const type = file.mimetype;
     const time = Date.now();
-
-    const params: AWS.S3.PutObjectRequest = {
+    const key = String(
+      `${this.configService.get('S3_BUCKET_FOLDER')}/${name.replace(
+        `.${extension}` as string,
+        '',
+      )}-${time}.${extension}`,
+    );
+    const params: AWS.PutObjectCommandInput = {
       Bucket: this.bucketName,
-      Key: String(
-        `filixer/${name.replace(
-          `.${extension}` as string,
-          '',
-        )}-${time}.${extension}`,
-      ),
+      Key: key,
       Body: file.buffer,
       ACL: 'public-read',
       ContentType: type,
@@ -41,8 +45,13 @@ export class AssetsService {
 
     try {
       const s3 = this.getS3();
-      const s3Response = await s3.upload(params).promise();
-      return s3Response.Location;
+      const command = new AWS.PutObjectCommand(params);
+      const s3Response = await s3.send(command);
+      console.log(
+        '🚀 ~ AssetsService ~ uploadFileToS3 ~ s3Response:',
+        s3Response,
+      );
+      return s3Response;
     } catch (error) {
       console.error('🚀 ~ AssetsService ~ uploadFileToS3 ~ error:', error);
       throw new Error('Failed to upload file to S3!');

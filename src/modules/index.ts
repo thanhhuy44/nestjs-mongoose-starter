@@ -1,8 +1,4 @@
-import { AssetsModule } from './assets/assets.module';
-import { AuthModule } from './auth/auth.module';
-import { CacheModule } from './cache/cache.module';
-import { UsersModule } from './users/users.module';
-
-const modules = [CacheModule, UsersModule, AuthModule, AssetsModule];
-
-export default modules;
+export * from './assets/assets.module';
+export * from './auth/auth.module';
+export * from './cache/cache.module';
+export * from './users/users.module';

@@ -3,10 +3,11 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
-import * as jwt from 'jsonwebtoken';
 import { Model } from 'mongoose';
 
 import { User } from '@/modules/users/entities/user.entity';
@@ -14,10 +15,16 @@ import { User } from '@/modules/users/entities/user.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
+interface JWTPayload {
+  id: string;
+  role: string;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private readonly UserModel: Model<User>,
+    private jwtService: JwtService,
   ) {}
 
   async register(body: RegisterDto) {
@@ -37,15 +44,20 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('User not found!');
     }
-    const isMatchPassword = await bcrypt.compare(body.password, user.password);
+    const isMatchPassword = await bcrypt.compareSync(
+      body.password,
+      user.password,
+    );
+
     if (!isMatchPassword) {
       throw new BadRequestException('Password not match!');
     }
-    const { token } = await this.token(user._id.toString(), user.role);
-    const { refreshToken } = await this.refreshToken(
-      user._id.toString(),
-      user.role,
-    );
+    const payload = {
+      id: user._id.toString(),
+      role: user.role,
+    };
+    const token = await this.token(payload);
+    const refreshToken = await this.refreshToken(payload);
 
     return {
       info: user,
@@ -54,31 +66,35 @@ export class AuthService {
     };
   }
 
-  async token(id: string, role: string) {
-    try {
-      const token = jwt.sign({ id, role }, process.env.JWT_SECRET_KEY, {
-        expiresIn: 60 * 60,
-      });
-      return { token };
-    } catch (error) {
-      console.error(error);
-      throw new BadRequestException(error.message);
-    }
+  async token(payload: JWTPayload) {
+    return await this.jwtService.signAsync(payload, {
+      expiresIn: '15m',
+    });
   }
 
-  async refreshToken(id: string, role: string) {
+  async refreshToken(payload: JWTPayload) {
+    return await this.jwtService.signAsync(payload, {
+      expiresIn: '30 days',
+    });
+  }
+
+  async refresh(refreshToken: string) {
     try {
-      const refreshToken = jwt.sign(
-        { id, role },
-        process.env.JWT_REFRESH_SECRET_KEY,
-        {
-          expiresIn: '30 days',
-        },
-      );
-      return { refreshToken };
+      const payload = await this.jwtService.verifyAsync(refreshToken);
+
+      return {
+        accessToken: await this.token({
+          id: payload.id,
+          role: payload.role,
+        }),
+        refreshToken: await this.refreshToken({
+          id: payload.id,
+          role: payload.role,
+        }),
+      };
     } catch (error) {
-      console.error(error);
-      throw new BadRequestException(error.message);
+      console.log('🚀 ~ AuthService ~ refresh ~ error:', error);
+      throw new UnauthorizedException('Invalid refresh token');
     }
   }
 }
