@@ -105,6 +105,8 @@ export class QueryHelper {
   private parseValue(value: string): any {
     if (value === 'true') return true;
     if (value === 'false') return false;
+    if (value === 'null') return null;
+    if (value === 'undefined') return undefined;
     const num = Number(value);
     return isNaN(num) ? value : num;
   }

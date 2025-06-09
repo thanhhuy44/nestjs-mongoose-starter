@@ -36,14 +36,14 @@ export class BaseController<T> {
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() data: any) {
+  async update(@Param('id', ParseObjectIdPipe) id: string, @Body() data: any) {
     const result = await this.service.update(id, data);
     if (!result) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     return result;
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id', ParseObjectIdPipe) id: string) {
     const result = await this.service.delete(id);
     if (!result) throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     return result;
