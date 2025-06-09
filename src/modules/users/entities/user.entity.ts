@@ -6,12 +6,6 @@ import { EUserRole } from '@/types';
 export type UserDocument = HydratedDocument<User>;
 
 @Schema({
-  toJSON: {
-    transform: (doc: UserDocument, user: User) => {
-      delete user.password;
-      return user;
-    },
-  },
   timestamps: true,
 })
 export class User {
