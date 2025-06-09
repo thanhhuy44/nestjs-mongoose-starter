@@ -1,8 +1,5 @@
 import {
   Controller,
-  Delete,
-  Get,
-  Param,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -33,22 +30,6 @@ export class AssetsController {
   })
   @UseInterceptors(FileInterceptor('file'))
   async create(@UploadedFile() file: Express.Multer.File) {
-    const data = await this.assetsService.create(file);
-    return { data };
-  }
-
-  @Get()
-  findAll() {
-    return this.assetsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.assetsService.findOne(+id);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.assetsService.remove(+id);
+    return await this.assetsService.create(file);
   }
 }

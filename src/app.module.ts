@@ -7,11 +7,20 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { AssetsModule, AuthModule, UsersModule } from '@/modules';
 
+import { CommonModule } from './common/common.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: ['.env.local', '.env'],
       isGlobal: true,
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get('DATABASE_URL'),
+      }),
     }),
     JwtModule.registerAsync({
       global: true,
@@ -21,22 +30,16 @@ import { AssetsModule, AuthModule, UsersModule } from '@/modules';
         secret: configService.get('JWT_SECRET_KEY'),
       }),
     }),
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get('DATABASE_URL'),
-      }),
-    }),
     CacheModule.registerAsync({
       isGlobal: true,
       useFactory: () => ({
-        ttl: 5,
-        max: 10,
+        ttl: 1000 * 60 * 5,
+        max: 999999,
         store: 'memory',
         isGlobal: true,
       }),
     }),
+    CommonModule,
     UsersModule,
     AssetsModule,
     AuthModule,

@@ -1,10 +1,10 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Document } from 'mongoose';
 
-import { PaginationDto } from '@/common/dto/pagination.dto';
+import { BaseController } from '@/core/base.controller';
+import { GetUser } from '~/auth/decorator';
 
-import { GetUser } from '../auth/decorator';
 import { AuthGuard } from '../auth/guard';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
@@ -12,12 +12,9 @@ import { UsersService } from './users.service';
 @ApiTags('User')
 @ApiBearerAuth('JWT-Auth')
 @Controller('users')
-export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
-  @Get()
-  async findAll(@Query() pagination: PaginationDto) {
-    const data = await this.usersService.findAll(pagination);
-    return data;
+export class UsersController extends BaseController<User> {
+  constructor(private readonly usersService: UsersService) {
+    super(usersService);
   }
 
   @UseGuards(AuthGuard)

@@ -7,7 +7,9 @@ import { AppModule } from '@/app.module';
 import { TransformInterceptor } from './common/response.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+  });
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({
@@ -36,7 +38,6 @@ async function bootstrap() {
     .setTitle('NestJS Mongoose Starter')
     .setDescription('API description')
     .setVersion('1.0')
-    .setBasePath('api')
     .build();
   const document = SwaggerModule.createDocument(app, config);
 

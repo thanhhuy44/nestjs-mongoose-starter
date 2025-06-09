@@ -24,7 +24,7 @@ interface JWTPayload {
 export class AuthService {
   constructor(
     @InjectModel(User.name) private readonly UserModel: Model<User>,
-    private jwtService: JwtService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async register(body: RegisterDto) {
@@ -44,10 +44,7 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('User not found!');
     }
-    const isMatchPassword = await bcrypt.compareSync(
-      body.password,
-      user.password,
-    );
+    const isMatchPassword = bcrypt.compareSync(body.password, user.password);
 
     if (!isMatchPassword) {
       throw new BadRequestException('Password not match!');

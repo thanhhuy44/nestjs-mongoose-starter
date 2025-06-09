@@ -73,16 +73,4 @@ export class AssetsService {
       throw new InternalServerErrorException();
     }
   }
-
-  findAll() {
-    return `This action returns all assets`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} asset`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} asset`;
-  }
 }
