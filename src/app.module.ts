@@ -5,7 +5,12 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { AssetsModule, AuthModule, UsersModule } from '@/modules';
+import {
+  AssetsModule,
+  AuthModule,
+  PaymentsModule,
+  UsersModule,
+} from '@/modules';
 
 import { CommonModule } from './common/common.module';
 
@@ -18,9 +23,18 @@ import { CommonModule } from './common/common.module';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get('DATABASE_URL'),
-      }),
+      useFactory: (configService: ConfigService) => {
+        const username = configService.get('MONGO_DB_USERNAME') ?? '';
+        const password = configService.get('MONGO_DB_PASSWORD') ?? '';
+        const hasAuth = username && password;
+        const host = configService.get('MONGO_DB_HOST');
+        const port = configService.get('MONGO_DB_PORT');
+        const name = configService.get('MONGO_DB_NAME');
+        const uri = `mongodb://${username}${hasAuth ? ':' : ''}${password}${hasAuth ? '@' : ''}${host}${port ? ':' : ''}${port}/${name}?authSource=admin`;
+        return {
+          uri,
+        };
+      },
     }),
     JwtModule.registerAsync({
       global: true,
@@ -43,6 +57,7 @@ import { CommonModule } from './common/common.module';
     UsersModule,
     AssetsModule,
     AuthModule,
+    PaymentsModule,
   ],
   providers: [
     {
