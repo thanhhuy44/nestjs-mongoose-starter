@@ -45,13 +45,13 @@ import { CommonModule } from './common/common.module';
       }),
     }),
     CacheModule.registerAsync({
-      isGlobal: true,
       useFactory: () => ({
         ttl: 1000 * 60 * 5,
         max: 999999,
         store: 'memory',
         isGlobal: true,
       }),
+      isGlobal: true,
     }),
     CommonModule,
     UsersModule,

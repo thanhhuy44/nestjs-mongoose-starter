@@ -10,14 +10,16 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Request } from 'express';
 import { Model } from 'mongoose';
 
+import { AppCacheService } from '@/common/cache/app-cache.service';
 import { User } from '@/modules/users/entities/user.entity';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     @InjectModel(User.name) private readonly UserModel: Model<User>,
-    private jwtService: JwtService,
-    private configService: ConfigService,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+    private readonly cacheService: AppCacheService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -30,8 +32,11 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get('JWT_SECRET_KEY'),
       });
-      // 💡 We're assigning the payload to the request object here
-      // so that we can access it in our route handlers
+      const cachedUser = await this.cacheService.get(`user:${payload.id}`);
+      if (cachedUser) {
+        request['user'] = cachedUser;
+        return true;
+      }
       const user = await this.UserModel.findOne({
         _id: payload.id,
         isDeleted: false,
@@ -39,7 +44,7 @@ export class AuthGuard implements CanActivate {
       if (!user) {
         throw new UnauthorizedException();
       }
-      //   console.log('🚀 ~ AuthGuard ~ canActivate ~ user:', user);
+      await this.cacheService.set(`user:${payload.id}`, user);
       request['user'] = user;
     } catch {
       throw new UnauthorizedException();
