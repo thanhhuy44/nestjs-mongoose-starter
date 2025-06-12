@@ -17,7 +17,12 @@ export class UsersService extends BaseService<User> {
   }
 
   async getMe(id: string) {
+    const cachedUser = await this.CacheService.get(`user:${id}`);
+    if (cachedUser) {
+      return cachedUser;
+    }
     const user = await this.UserModel.findById(id);
+    await this.CacheService.set(`user:${id}`, user);
     if (!user) {
       throw new NotFoundException('User not found!');
     }

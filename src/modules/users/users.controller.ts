@@ -18,7 +18,6 @@ export class UsersController extends BaseController<User> {
   }
   @Get('me')
   async getMe(@GetUser() user: UserDocument) {
-    const data = await this.usersService.getMe(user._id.toString());
-    return { data };
+    return this.usersService.getMe(user._id.toString());
   }
 }

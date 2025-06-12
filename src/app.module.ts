@@ -1,9 +1,12 @@
+import { createKeyv } from '@keyv/redis';
 import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CacheableMemory } from 'cacheable';
+import { Keyv } from 'keyv';
 
 import {
   AssetsModule,
@@ -45,18 +48,27 @@ import { CommonModule } from './common/common.module';
       }),
     }),
     CacheModule.registerAsync({
-      useFactory: () => ({
-        ttl: 1000 * 60 * 5,
-        max: 999999,
-        store: 'memory',
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        ttl: configService.get('CACHE_TTL') ?? 1000 * 60 * 5,
+        max: configService.get('CACHE_MAX') ?? 999999,
         isGlobal: true,
+        stores: [
+          new Keyv({
+            store: new CacheableMemory({ ttl: 60000, lruSize: 5000 }),
+          }),
+          createKeyv({
+            url: `redis://${configService.get('REDIS_HOST')}:${configService.get('REDIS_PORT')}`,
+          }),
+        ],
       }),
       isGlobal: true,
     }),
     CommonModule,
+    AuthModule,
     UsersModule,
     AssetsModule,
-    AuthModule,
     PaymentsModule,
   ],
   providers: [

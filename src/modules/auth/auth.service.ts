@@ -1,6 +1,8 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -8,6 +10,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
+import { Cache } from 'cache-manager';
 import { Model } from 'mongoose';
 
 import { User } from '@/modules/users/entities/user.entity';
@@ -24,6 +27,7 @@ interface JWTPayload {
 export class AuthService {
   constructor(
     @InjectModel(User.name) private readonly UserModel: Model<User>,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -53,8 +57,10 @@ export class AuthService {
       id: user._id.toString(),
       role: user.role,
     };
-    const token = await this.token(payload);
-    const refreshToken = await this.refreshToken(payload);
+    const [token, refreshToken] = await Promise.all([
+      this.token(payload),
+      this.refreshToken(payload),
+    ]);
 
     return {
       info: user,
@@ -75,19 +81,32 @@ export class AuthService {
     });
   }
 
-  async refresh(refreshToken: string) {
+  async refresh(oldRefreshToken: string) {
     try {
-      const payload = await this.jwtService.verifyAsync(refreshToken);
+      const payload = await this.jwtService.verifyAsync(oldRefreshToken);
+      const cachedUser = await this.cacheManager.get(`user:${payload.id}`);
+      if (!cachedUser) {
+        const user = await this.UserModel.findById(payload.id);
+        if (!user) {
+          throw new NotFoundException('User not found!');
+        }
+        await this.cacheManager.set(`user:${payload.id}`, user);
+      }
+
+      const [accessToken, refreshToken] = await Promise.all([
+        this.token({
+          id: payload.id,
+          role: payload.role,
+        }),
+        this.refreshToken({
+          id: payload.id,
+          role: payload.role,
+        }),
+      ]);
 
       return {
-        accessToken: await this.token({
-          id: payload.id,
-          role: payload.role,
-        }),
-        refreshToken: await this.refreshToken({
-          id: payload.id,
-          role: payload.role,
-        }),
+        accessToken,
+        refreshToken,
       };
     } catch (error) {
       console.log('🚀 ~ AuthService ~ refresh ~ error:', error);
