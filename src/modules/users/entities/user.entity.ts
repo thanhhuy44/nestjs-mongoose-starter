@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
 import { EUserRole } from '@/types';
 
@@ -7,8 +7,17 @@ export type UserDocument = HydratedDocument<User>;
 
 @Schema({
   timestamps: true,
+  toJSON: {
+    virtuals: true,
+    transform: function(doc, ret) {
+      delete ret.__v;
+      return ret;
+    }
+  }
 })
 export class User {
+  _id: Types.ObjectId;
+
   @Prop({
     required: true,
   })
@@ -16,6 +25,9 @@ export class User {
 
   @Prop({
     required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
   })
   email: string;
 
@@ -30,19 +42,25 @@ export class User {
     enum: EUserRole,
     default: EUserRole.USER,
   })
-  role: string;
+  role: EUserRole;
 
   @Prop({
-    required: true,
     default: false,
   })
   isDeleted: boolean;
+
+  @Prop()
+  deletedAt?: Date;
 
   @Prop()
   createdBy?: string;
 
   @Prop()
   updatedBy?: string;
+
+  // Timestamps will be added automatically
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
