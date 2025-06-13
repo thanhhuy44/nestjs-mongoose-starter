@@ -4,7 +4,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from '@/app.module';
 
-import { TransformInterceptor } from './common/response.interceptor';
+import { AllExceptionsFilter } from './common/filters/http-exception.filter';
+import { ErrorInterceptor } from './common/interceptor/error.interceptor';
+import { TransformInterceptor } from './common/interceptor/response.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -19,7 +21,8 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
-  app.useGlobalInterceptors(new TransformInterceptor());
+  app.useGlobalInterceptors(new TransformInterceptor(), new ErrorInterceptor());
+  app.useGlobalFilters(new AllExceptionsFilter());
   app.enableCors();
 
   // swagger

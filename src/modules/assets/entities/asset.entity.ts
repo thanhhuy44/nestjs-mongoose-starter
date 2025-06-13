@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
 export type AssetDocument = HydratedDocument<Asset>;
 
@@ -46,6 +46,13 @@ export class Asset {
     select: false,
   })
   isDeleted: boolean;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: 'User',
+    required: true,
+  })
+  createdBy: Types.ObjectId;
 
   @Prop({
     required: true,

@@ -1,8 +1,9 @@
-export type ApiResponse = {
+export type ApiResponse<T> = {
+  timestamp: number;
   statusCode: number;
   message: string;
-  data: any;
-  pagination?: Pagination;
+  data: T | null;
+  error?: string;
 };
 
 export type Pagination = {

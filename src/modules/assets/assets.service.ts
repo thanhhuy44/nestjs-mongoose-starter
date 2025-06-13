@@ -2,7 +2,7 @@ import * as AWS from '@aws-sdk/client-s3';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 import { Asset } from './entities/asset.entity';
 
@@ -30,7 +30,7 @@ export class AssetsService {
     const time = Date.now();
     const key = String(
       `${this.configService.get('S3_BUCKET_FOLDER')}/${name.replace(
-        `.${extension}` as string,
+        `.${extension}`,
         '',
       )}-${time}.${extension}`,
     );
@@ -46,24 +46,21 @@ export class AssetsService {
     try {
       const s3 = this.getS3();
       const command = new AWS.PutObjectCommand(params);
-      const s3Response = await s3.send(command);
-      console.log(
-        '🚀 ~ AssetsService ~ uploadFileToS3 ~ s3Response:',
-        s3Response,
-      );
-      return s3Response;
+      await s3.send(command);
+      return `https://${this.bucketName}.s3.${this.configService.get('S3_BUCKET_REGION')}.amazonaws.com/${key}`;
     } catch (error) {
       console.error('🚀 ~ AssetsService ~ uploadFileToS3 ~ error:', error);
       throw new Error('Failed to upload file to S3!');
     }
   }
 
-  async create(file: Express.Multer.File) {
+  async create(file: Express.Multer.File, createdBy: Types.ObjectId) {
     try {
       const fileUrl = await this.uploadFileToS3(file);
       const asset = await this.AssetModel.create({
         ...file,
         url: fileUrl,
+        createdBy,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       });

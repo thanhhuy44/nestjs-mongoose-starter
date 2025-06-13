@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { User, UserSchema } from '~/users/entities/user.entity';
+
 import { AssetsController } from './assets.controller';
 import { AssetsService } from './assets.service';
 import { Asset, AssetSchema } from './entities/asset.entity';
@@ -11,6 +13,10 @@ import { Asset, AssetSchema } from './entities/asset.entity';
       {
         name: Asset.name,
         schema: AssetSchema,
+      },
+      {
+        name: User.name,
+        schema: UserSchema,
       },
     ]),
   ],
