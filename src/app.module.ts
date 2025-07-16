@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CacheableMemory } from 'cacheable';
 import { Keyv } from 'keyv';
@@ -74,6 +75,7 @@ import { CommonModule } from './common/common.module';
         },
       ],
     }),
+    ScheduleModule.forRoot(),
     CommonModule,
     AuthModule,
     UsersModule,
