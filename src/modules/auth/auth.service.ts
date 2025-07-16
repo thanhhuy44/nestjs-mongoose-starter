@@ -71,13 +71,13 @@ export class AuthService {
 
   async token(payload: JWTPayload) {
     return await this.jwtService.signAsync(payload, {
-      expiresIn: '15m',
+      expiresIn: process.env.JWT_SECRET_EXPIRE_IN,
     });
   }
 
   async refreshToken(payload: JWTPayload) {
     return await this.jwtService.signAsync(payload, {
-      expiresIn: '30 days',
+      expiresIn: process.env.JWT_REFRESH_SECRET_EXPIRE_IN,
     });
   }
 

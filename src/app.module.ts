@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { CacheableMemory } from 'cacheable';
 import { Keyv } from 'keyv';
 
@@ -64,6 +65,14 @@ import { CommonModule } from './common/common.module';
         ],
       }),
       isGlobal: true,
+    }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 100,
+        },
+      ],
     }),
     CommonModule,
     AuthModule,
